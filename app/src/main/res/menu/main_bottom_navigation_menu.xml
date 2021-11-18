@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/nav_film"
+        android:title="@string/movie"
+        android:icon="@drawable/baseline_smart_display_red_600_24dp"/>
+
+    <item android:id="@+id/nav_tv"
+        android:title="@string/tv"
+        android:icon="@drawable/baseline_tv_red_600_24dp"
+        />
+
+</menu>
