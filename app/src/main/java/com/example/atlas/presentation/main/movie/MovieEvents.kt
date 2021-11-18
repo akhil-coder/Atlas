@@ -7,6 +7,8 @@ sealed class MovieEvents {
 
     object MovieDiscover : MovieEvents()
 
+    object NextPage : MovieEvents()
+
     object OnRemoveHeadFromQueue : MovieEvents()
 
     data class Error(val stateMessage: StateMessage) : MovieEvents()

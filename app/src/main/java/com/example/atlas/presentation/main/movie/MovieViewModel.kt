@@ -24,26 +24,48 @@ constructor(
     val state: MutableLiveData<MovieState> = MutableLiveData(MovieState())
 
     init {
-            onTriggerEvent(event = MovieEvents.MovieDiscover)
+        onTriggerEvent(event = MovieEvents.MovieDiscover)
         Log.d(TAG, "Inside init: ")
-        }
+    }
 
     fun onTriggerEvent(event: MovieEvents) {
         when (event) {
             is MovieEvents.MovieDiscover -> {
-                Log.d(TAG, "onTriggerEvent: Inside Discover")
-            discover()
+                discover()
             }
+            is MovieEvents.NextPage -> {
+                nextPage()
+            }
+        }
+    }
+
+    private fun nextPage() {
+        incrementPageNumber()
+        state.value?.let { state ->
+            discoverMovies.execute(state.page).onEach { dataState ->
+                this.state.value = state.copy(isLoading = dataState.isLoading)
+
+                dataState.data?.let { list ->
+                    this.state.value = state.copy(movieList = list.resultsEntity)
+                }
+
+            }.launchIn(viewModelScope)
+        }
+    }
+
+    private fun incrementPageNumber() {
+        state.value?.let { state ->
+            this.state.value = state.copy(page = state.page + 1)
         }
     }
 
     private fun discover() {
         state.value?.let { state ->
-            discoverMovies.execute().onEach { dataState ->
+            discoverMovies.execute(page = state.page).onEach { dataState ->
                 this.state.value = state.copy(isLoading = dataState.isLoading)
 
                 dataState.data?.let { list ->
-                    this.state.value = state.copy(movieList = list)
+                    this.state.value = state.copy(movieList = list.resultsEntity)
                 }
             }.launchIn(viewModelScope)
         }

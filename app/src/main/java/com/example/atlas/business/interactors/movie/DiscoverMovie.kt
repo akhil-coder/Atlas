@@ -12,12 +12,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 class DiscoverMovie(private val service: TMDBService) {
-    val TAG = "DiscoverMovie"
-    fun execute(): Flow<DataState<MovieList>> = flow {
+    private val TAG = "DiscoverMovie"
+    fun execute(page: Int): Flow<DataState<MovieList>> = flow {
         emit(DataState.loading<MovieList>())
 
         try {
-            val movieList = service.discoverMovies("e9e690206c5709a32678c99230ce1a1e", "en-US", 1).toMovieList()
+            val movieList = service.discoverMovies("e9e690206c5709a32678c99230ce1a1e", "en-US", page).toMovieList()
             Log.d(TAG, "execute: ${movieList.totalPages}")
             emit(DataState.data(response = null, data = movieList))
         } catch (e: Exception){

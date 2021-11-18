@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.atlas.business.domain.models.ResultsEntity
 import com.example.atlas.business.domain.utils.StateMessageCallback
 import com.example.atlas.databinding.MovieFragmentBinding
@@ -20,7 +21,7 @@ class MovieFragment : Fragment() {
     val TAG = "MovieFragment"
     private var _binding: MovieFragmentBinding? = null
     private val binding get() = _binding!!
-    private var recyclerAdapter: MovieListAdapter? = null
+    lateinit var recyclerAdapter: MovieListAdapter
 
     private val viewModel: MovieViewModel by viewModels()
 
@@ -39,7 +40,7 @@ class MovieFragment : Fragment() {
     }
 
     private fun subscribeObservers() {
-        viewModel.state.observe(viewLifecycleOwner) { state ->
+        viewModel.state.observe(viewLifecycleOwner) {  state ->
             //            uiCommunicationListener.displayProgressBar(state.isLoading)
             processQueue(
                 context = context,
@@ -51,25 +52,40 @@ class MovieFragment : Fragment() {
                 }
             )
             recyclerAdapter?.apply {
-                submitList(movieList = state.movieList?.resultsEntity)
+                submitList(movieList = state.movieList)
+                notifyDataSetChanged()
             }
         }
-
     }
 
     private fun initRecyclerView() {
         binding.movieRecyclerView.apply {
-            layoutManager = LinearLayoutManager(this@MovieFragment.context)
+            layoutManager = LinearLayoutManager(activity)
             val topSpacingDecorator = TopSpacingItemDecoration(30)
             removeItemDecoration(topSpacingDecorator)
             addItemDecoration(topSpacingDecorator)
 
             recyclerAdapter = MovieListAdapter()
+            addOnScrollListener(object: RecyclerView.OnScrollListener() {
+                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                    super.onScrollStateChanged(recyclerView, newState)
+                    val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                    val lastPosition = layoutManager.findLastVisibleItemPosition()
+                    Log.d(
+                        TAG,
+                        "onScrollStateChanged: exhausted? ${viewModel.state.value?.isQueryExhausted}"
+                    )
+                    if(
+                        lastPosition == recyclerAdapter?.itemCount?.minus(1)
+                        && viewModel.state.value?.isLoading == false
+                        && viewModel.state.value?.isQueryExhausted == false
+                    ) {
+                        Log.d(TAG, "BlogFragment: attempting to load next page...")
+                        viewModel.onTriggerEvent(MovieEvents.NextPage)
+                    }
+                }
+            })
             adapter = recyclerAdapter
-        }
-        var  a = listOf<ResultsEntity>( ResultsEntity(1, "", "23", "dfdkfl", "",23.00), ResultsEntity(1, "", "23", "dfdkfl", "",23.00)  as ResultsEntity)
-        recyclerAdapter?.apply {
-            submitList(movieList = a)
         }
     }
 }

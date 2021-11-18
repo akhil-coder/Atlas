@@ -17,7 +17,6 @@ class MovieListAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         override fun areContentsTheSame(oldItem: ResultsEntity, newItem: ResultsEntity): Boolean {
             return oldItem == newItem
         }
-
     }
 
     class MovieViewHolder
@@ -50,11 +49,11 @@ class MovieListAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val differ =
         AsyncListDiffer(
-            BlogRecyclerChangeCallback(this),
+            RecyclerChangeCallback(this),
             AsyncDifferConfig.Builder(DIFF_CALLBACK).build()
         )
 
-    internal inner class BlogRecyclerChangeCallback(
+    internal inner class RecyclerChangeCallback(
         private val adapter: MovieListAdapter
     ) : ListUpdateCallback {
 
