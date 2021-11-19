@@ -1,5 +1,10 @@
 package com.example.atlas.di
 
+import android.app.Application
+import androidx.room.Room
+import com.example.atlas.business.datasource.cache.AppDatabase
+import com.example.atlas.business.datasource.cache.AppDatabase.Companion.DATABASE_NAME
+import com.example.atlas.business.datasource.cache.movie.MovieDao
 import com.example.atlas.business.datasource.network.main.TMDBService
 import com.example.atlas.business.domain.utils.Constants
 import com.example.atlas.business.interactors.movie.DiscoverMovie
@@ -18,6 +23,21 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+
+    @Singleton
+    @Provides
+    fun provideAppDb(app: Application): AppDatabase {
+        return Room
+            .databaseBuilder(app, AppDatabase::class.java, DATABASE_NAME)
+            .fallbackToDestructiveMigration() // get correct db version if schema changed
+            .build()
+    }
+
+    @Singleton
+    @Provides
+    fun provideMovieDao(db: AppDatabase): MovieDao {
+        return db.getMovieDao()
+    }
 
     @Singleton
     @Provides
@@ -45,8 +65,8 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideDiscoverMovie(service: TMDBService): DiscoverMovie {
-        return DiscoverMovie(service)
+    fun provideDiscoverMovie(service: TMDBService, cache: MovieDao): DiscoverMovie {
+        return DiscoverMovie(service, cache)
     }
 
     @Singleton

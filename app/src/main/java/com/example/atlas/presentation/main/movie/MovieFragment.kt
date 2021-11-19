@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.atlas.business.domain.models.ResultsEntity
 import com.example.atlas.business.domain.utils.StateMessageCallback
 import com.example.atlas.databinding.MovieFragmentBinding
 import com.example.atlas.presentation.util.TopSpacingItemDecoration
@@ -53,7 +52,6 @@ class MovieFragment : Fragment() {
             )
             recyclerAdapter?.apply {
                 submitList(movieList = state.movieList)
-                notifyDataSetChanged()
             }
         }
     }

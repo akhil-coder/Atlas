@@ -1,7 +1,6 @@
 package com.example.atlas.business.domain.utils
 
 
-
 data class DataState<T>(
     val stateMessage: StateMessage? = null,
     val data: T? = null,

@@ -1,17 +1,17 @@
 package com.example.atlas.business.datasource.network.main.movie
 
-import com.example.atlas.business.domain.models.MovieList
-import com.example.atlas.business.domain.models.ResultsEntity
+import com.example.atlas.business.domain.models.MovieResponse
+import com.example.atlas.business.domain.models.Movie
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
-data class MovieListDto(
+data class MovieDiscoverResponseDto(
     @Expose
     @SerializedName("page")
     val page: Int,
     @Expose
     @SerializedName("results")
-    val resultsBean: List<ResultsBean>,
+    val results: List<MovieDto>,
     @Expose
     @SerializedName("total_pages")
     val totalPages: Int,
@@ -20,7 +20,7 @@ data class MovieListDto(
     val totalResults: Int
 )
 
-data class ResultsBean(
+data class MovieDto(
     @Expose
     @SerializedName("adult")
     val adult: Boolean,
@@ -65,17 +65,18 @@ data class ResultsBean(
     val voteCount: Int
 )
 
-fun MovieListDto.toMovieList(): MovieList {
-    return MovieList(
+fun MovieDiscoverResponseDto.toMovieResponse(): MovieResponse {
+    return MovieResponse(
         page = page,
-        resultsEntity = resultsBean.map {
-            ResultsEntity(
+        movieList = results.map {
+            Movie(
                 id = it.id,
                 title = it.title,
                 posterPath = it.posterPath,
                 voteAverage = it.voteAverage,
                 overview = it.overview,
-                releaseDate = it.releaseDate
+                releaseDate = it.releaseDate,
+                popularity = it.popularity
             )
         },
         totalPages = totalPages,

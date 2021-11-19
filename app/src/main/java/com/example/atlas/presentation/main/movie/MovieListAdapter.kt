@@ -3,28 +3,34 @@ package com.example.atlas.presentation.main.movie
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.*
-import com.example.atlas.business.domain.models.ResultsEntity
+import com.example.atlas.business.domain.models.Movie
 import com.example.atlas.databinding.RecyclerListItemBinding
 
 class MovieListAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<ResultsEntity>() {
+    private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Movie>() {
 
-        override fun areItemsTheSame(oldItem: ResultsEntity, newItem: ResultsEntity): Boolean {
+        override fun areItemsTheSame(oldItem: Movie, newItem: Movie): Boolean {
             return oldItem.id == newItem.id
         }
 
-        override fun areContentsTheSame(oldItem: ResultsEntity, newItem: ResultsEntity): Boolean {
+        override fun areContentsTheSame(oldItem: Movie, newItem: Movie): Boolean {
             return oldItem == newItem
         }
     }
+
+    private val differ =
+        AsyncListDiffer(
+            RecyclerChangeCallback(this),
+            AsyncDifferConfig.Builder(DIFF_CALLBACK).build()
+        )
 
     class MovieViewHolder
     constructor(
         private val binding: RecyclerListItemBinding,
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: ResultsEntity) {
+        fun bind(item: Movie) {
             binding.tvTitle.text = item.title
             binding.tvReleaseDate.text = item.releaseDate
         }
@@ -42,16 +48,17 @@ class MovieListAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun getItemCount() = differ.currentList.size
 
-    fun submitList(movieList: List<ResultsEntity>?) {
-        val newList = movieList?.toMutableList()
-        differ.submitList(newList)
-    }
+    fun submitList(movieList: List<Movie>?) {
+//        val newList = movieList?.toMutableList()
+//        differ.submitList(newList)
 
-    private val differ =
-        AsyncListDiffer(
-            RecyclerChangeCallback(this),
-            AsyncDifferConfig.Builder(DIFF_CALLBACK).build()
-        )
+        val x = mutableListOf<Movie>().apply{
+            if (movieList != null) {
+                addAll(movieList)
+            }
+        }
+        differ.submitList(x)
+    }
 
     internal inner class RecyclerChangeCallback(
         private val adapter: MovieListAdapter

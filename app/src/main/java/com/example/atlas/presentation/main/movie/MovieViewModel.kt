@@ -1,10 +1,13 @@
 package com.example.atlas.presentation.main.movie
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.atlas.business.domain.utils.ErrorHandling
+import com.example.atlas.business.domain.utils.StateMessage
+import com.example.atlas.business.domain.utils.UIComponentType
+import com.example.atlas.business.domain.utils.doesMessageAlreadyExistInQueue
 import com.example.atlas.business.interactors.movie.DiscoverMovie
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
@@ -25,7 +28,6 @@ constructor(
 
     init {
         onTriggerEvent(event = MovieEvents.MovieDiscover)
-        Log.d(TAG, "Inside init: ")
     }
 
     fun onTriggerEvent(event: MovieEvents) {
@@ -46,10 +48,36 @@ constructor(
                 this.state.value = state.copy(isLoading = dataState.isLoading)
 
                 dataState.data?.let { list ->
-                    this.state.value = state.copy(movieList = list.resultsEntity)
+                    this.state.value = state.copy(movieList = list)
+                }
+
+                dataState.stateMessage?.let { stateMessage ->
+                    if(stateMessage.response.message?.contains(ErrorHandling.INVALID_PAGE) == true){
+                        onUpdateQueryExhausted(true)
+                    }else{
+                        appendToMessageQueue(stateMessage)
+                    }
                 }
 
             }.launchIn(viewModelScope)
+        }
+    }
+
+    private fun appendToMessageQueue(stateMessage: StateMessage){
+        state.value?.let { state ->
+            val queue = state.queue
+            if(!stateMessage.doesMessageAlreadyExistInQueue(queue = queue)){
+                if(!(stateMessage.response.uiComponentType is UIComponentType.None)){
+                    queue.add(stateMessage)
+                    this.state.value = state.copy(queue = queue)
+                }
+            }
+        }
+    }
+
+    private fun onUpdateQueryExhausted(isExhausted: Boolean) {
+        state.value?.let { state ->
+            this.state.value = state.copy(isQueryExhausted = isExhausted)
         }
     }
 
@@ -60,14 +88,35 @@ constructor(
     }
 
     private fun discover() {
+        resetPage()
+        clearList()
         state.value?.let { state ->
             discoverMovies.execute(page = state.page).onEach { dataState ->
                 this.state.value = state.copy(isLoading = dataState.isLoading)
 
-                dataState.data?.let { list ->
-                    this.state.value = state.copy(movieList = list.resultsEntity)
+                dataState.data?.let { response ->
+                    this.state.value = state.copy(movieList = response)
+                }
+
+                dataState.stateMessage?.let { stateMessage ->
+                    if(stateMessage.response.message?.contains(ErrorHandling.INVALID_PAGE) == true){
+                        onUpdateQueryExhausted(true)
+                    }else{
+                        appendToMessageQueue(stateMessage)
+                    }
                 }
             }.launchIn(viewModelScope)
         }
+    }
+
+    private fun clearList() {
+        state.value?.let { state ->
+            this.state.value = state.copy(movieList = listOf())
+        }
+    }
+
+    private fun resetPage() {
+        state.value = state.value?.copy(page = 1)
+        onUpdateQueryExhausted(false)
     }
 }

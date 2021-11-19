@@ -73,6 +73,13 @@ dependencies {
     // Kotlin
     def fragment_version = "1.3.6"
     implementation("androidx.fragment:fragment-ktx:$fragment_version")
+
+    // Room
+    def roomVersion = "2.3.0"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    kapt("androidx.room:room-compiler:$roomVersion")
+    // optional - Kotlin Extensions and Coroutines support for Room
+    implementation("androidx.room:room-ktx:$roomVersion")
 }
 
 // Allow references to generated code
